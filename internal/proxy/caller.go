@@ -1,6 +1,8 @@
 package proxy
 
 import (
+	"bytes"
+	"io/ioutil"
 	"net/http"
 	"time"
 
@@ -28,21 +30,29 @@ func NewCaller(
 	}
 }
 
-func (c *Caller) Call(r *http.Request) (*Response, error) {
+func (c *Caller) Call(r *http.Request) (*Request, error) {
 	destination := c.basePath + r.RequestURI
 
-	proxyReq, err := http.NewRequest(r.Method, destination, r.Body)
+	defer r.Body.Close()
 
+	// 1. Collect request body
+	requestBody, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		c.logger.Err(err).Msg("unable to read request body")
+		return nil, err
+	}
+
+	// 2. Init proxy request
+	proxyReq, err := http.NewRequest(r.Method, destination, bytes.NewReader(requestBody))
 	if err != nil {
 		c.logger.Err(err).Msg("unable to create proxy request")
 		return nil, err
 	}
 
-	startedAt := time.Now()
+	// 3. Perform request
+	createdAt := time.Now()
+
 	res, err := http.DefaultClient.Do(proxyReq)
-
-	duration := time.Now().Sub(startedAt)
-
 	if err != nil {
 		c.logger.Err(err).Str("destination", destination).Msg("request error")
 		return nil, err
@@ -50,10 +60,28 @@ func (c *Caller) Call(r *http.Request) (*Response, error) {
 
 	defer res.Body.Close()
 
-	return NewResponse(
-		res,
-		r.Method,
-		r.RequestURI,
-		duration,
-	)
+	duration := time.Now().Sub(createdAt)
+
+	responseBody, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		c.logger.Err(err).Msg("unable to read response body")
+		return nil, err
+	}
+
+	// 4. Construct result
+	resultedRequest := &Request{
+		Method:     r.Method,
+		RequestURI: r.RequestURI,
+		Headers:    FlattenHeaders(r.Header),
+		CreatedAt:  createdAt,
+		Body:       requestBody,
+		Response: &Response{
+			Code:     res.StatusCode,
+			Headers:  FlattenHeaders(res.Header),
+			Body:     responseBody,
+			Duration: duration,
+		},
+	}
+
+	return resultedRequest, nil
 }

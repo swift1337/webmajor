@@ -35,7 +35,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) HandleProxyRequest(w http.ResponseWriter, r *http.Request) {
-	result, err := h.proxyCaller.Call(r)
+	request, err := h.proxyCaller.Call(r)
 
 	if err != nil {
 		h.logger.Err(err).Msg("error while proxying request")
@@ -44,16 +44,17 @@ func (h *Handler) HandleProxyRequest(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.logger.Info().
-		Str("destination", result.RequestURI).
-		Int("statusCode", result.Code).
-		Str("method", result.Method).
-		Dur("duration", result.Duration).
-		Int("body_size", len(result.Body)).
-		Msg("got response from destination")
+		Str("destination", request.RequestURI).
+		Int("code", request.Response.Code).
+		Str("method", request.Method).
+		Dur("duration", request.Response.Duration).
+		Int("request_body_size", len(request.Body)).
+		Int("response_body_size", len(request.Response.Body)).
+		Msg("request handled")
 
-	writeResponse(w, result)
+	writeProxyResponse(w, request)
 
-	h.requestStore.Append(result)
+	h.requestStore.Append(request)
 }
 
 // ListRequests get all requests that are made
@@ -61,10 +62,10 @@ func (h *Handler) ListRequests(w http.ResponseWriter, _ *http.Request) {
 	w.Header().Add("content-type", "application/json")
 	w.WriteHeader(http.StatusOK)
 
-	result := make([]*proxy.Response, 0)
+	result := make([]*proxy.Request, 0)
 
 	for item := range h.requestStore.Iterate() {
-		responseItem, ok := item.Value.(*proxy.Response)
+		responseItem, ok := item.Value.(*proxy.Request)
 
 		if !ok {
 			h.logger.Warn().Msg("unable to cast slice value to responseItem")
@@ -84,13 +85,13 @@ func (h *Handler) ListRequests(w http.ResponseWriter, _ *http.Request) {
 	w.Write(encoded)
 }
 
-func writeResponse(w http.ResponseWriter, proxyResponse *proxy.Response) {
-	for key, value := range proxyResponse.Headers {
+func writeProxyResponse(w http.ResponseWriter, proxyReq *proxy.Request) {
+	for key, value := range proxyReq.Response.Headers {
 		w.Header().Add(key, value)
 	}
 
-	w.WriteHeader(proxyResponse.Code)
-	w.Write(proxyResponse.Body)
+	w.WriteHeader(proxyReq.Response.Code)
+	w.Write(proxyReq.Response.Body)
 }
 
 func writeErr(w http.ResponseWriter) {
