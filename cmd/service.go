@@ -8,8 +8,10 @@ import (
 
 	"github.com/rs/zerolog"
 	"github.com/swift1337/webmajor/internal/proxy"
+	httpServer "github.com/swift1337/webmajor/internal/server/http"
 	v1 "github.com/swift1337/webmajor/internal/server/http/v1"
 	"github.com/swift1337/webmajor/internal/store"
+	"github.com/swift1337/webmajor/web"
 )
 
 var (
@@ -21,18 +23,22 @@ var logger zerolog.Logger
 
 func main() {
 	flag.Parse()
-
 	logger = setupLogger()
-	proxyCaller := proxy.NewCaller("http://0.0.0.0:"+*proxyPort, logger)
 
 	handler := v1.New(
-		proxyCaller,
+		proxy.NewCaller("http://0.0.0.0:"+*proxyPort, logger),
 		store.NewSyncSlice(),
 		logger,
 	)
 
+	router := httpServer.NewRouter(
+		httpServer.WithDashboardAPI("/__webmajor/api", handler),
+		httpServer.WithDashboardAssets("/__webmajor", http.FS(web.Dashboard)),
+		httpServer.WithProxy(handler),
+	)
+
 	logger.Info().Msg("starting http server")
-	err := http.ListenAndServe(":"+*servicePort, handler)
+	err := http.ListenAndServe(":"+*servicePort, router)
 
 	if err != nil {
 		logger.Fatal().Err(err).Msg("error while running http server")

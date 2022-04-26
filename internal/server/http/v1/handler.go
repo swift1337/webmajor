@@ -15,8 +15,6 @@ type Handler struct {
 	logger       zerolog.Logger
 }
 
-const ApiEndpoint = "/__webmajor/api/request"
-
 func New(
 	proxyCaller *proxy.Caller,
 	requestStore *store.SyncSlice,
@@ -31,12 +29,8 @@ func New(
 	}
 }
 
+// ServeHTTP by default with handler calls HandleProxyRequest
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	if r.Method == "GET" && r.RequestURI == ApiEndpoint {
-		h.ListRequests(w, r)
-		return
-	}
-
 	h.HandleProxyRequest(w, r)
 }
 
@@ -62,7 +56,8 @@ func (h *Handler) HandleProxyRequest(w http.ResponseWriter, r *http.Request) {
 	h.requestStore.Append(result)
 }
 
-func (h *Handler) ListRequests(w http.ResponseWriter, r *http.Request) {
+// ListRequests get all requests that are made
+func (h *Handler) ListRequests(w http.ResponseWriter, _ *http.Request) {
 	w.Header().Add("content-type", "application/json")
 	w.WriteHeader(http.StatusOK)
 

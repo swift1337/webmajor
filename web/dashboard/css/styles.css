@@ -1,0 +1,45 @@
+
+.wrapper {
+    padding: 20px;
+}
+
+.requests, .request-pane {
+    border: 1px solid black;
+}
+
+.bold {
+    font-weight: 600;
+}
+
+.no-hover {
+    pointer-events: none;
+}
+
+.request-preview {
+    display: block;
+    padding: 5px 10px;
+    position: relative;
+}
+
+.request-preview:hover {
+    background: #eee;
+    cursor: pointer;
+}
+
+.request-preview--path,
+.request-preview--status,
+.request-preview--duration {
+    position: relative;
+    display: inline-block;
+}
+
+.request-preview--path {
+    width: 70%;
+}
+
+.request-preview--status {
+    width: 15%;
+}
+.request-preview--duration {
+    width: 13%;
+}
