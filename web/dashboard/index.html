@@ -12,87 +12,26 @@
     <link rel="mask-icon" href="fav/safari-pinned-tab.svg" color="#5bbad5">
 </head>
 <body>
-<div class="wrapper">
+<div class="wrapper" id="app">
     <div class="container-fluid">
         <div class="row">
             <div class="col-md-5">
-                <div class="requests">
+                <div class="requests" id="request-list">
                     <div class="request-preview no-hover">
                         <div class="request-preview--path bold">Request</div>
                         <div class="request-preview--status bold">Status</div>
                         <div class="request-preview--duration bold">Duration</div>
                     </div>
-                    <div class="request-preview">
-                        <div class="request-preview--path">GET <code>/api/abc/123/dsdfsfsdf?sdfsdfsd=sdfsdf</code></div>
-                        <div class="request-preview--status">200 OK</div>
-                        <div class="request-preview--duration">120ms</div>
-                    </div>
-                    <div class="request-preview">
-                        <div class="request-preview--path">GET /favicon.ico</div>
-                        <div class="request-preview--status">200 OK</div>
-                        <div class="request-preview--duration">120ms</div>
-                    </div>
-                    <div class="request-preview">
-                        <div class="request-preview--path">GET /favicon.ico</div>
-                        <div class="request-preview--status">200 OK</div>
-                        <div class="request-preview--duration">120ms</div>
-                    </div>
-                    <div class="request-preview">
-                        <div class="request-preview--path">GET /favicon.ico</div>
-                        <div class="request-preview--status">200 OK</div>
-                        <div class="request-preview--duration">120ms</div>
-                    </div>
-                    <div class="request-preview">
-                        <div class="request-preview--path">GET /favicon.ico</div>
-                        <div class="request-preview--status">200 OK</div>
-                        <div class="request-preview--duration">120ms</div>
-                    </div>
                 </div>
             </div>
             <div class="col-md-7">
                 <div class="response-pane">
-                    <div class="response-pane-response">
-                        <h3>GET /favicon.ico</h3>
-                        <p>14.04.2021 15:30:31</p>
-                        <table class="table table-compact">
-                            <thead>
-                            <tr>
-                                <th>Header</th>
-                                <th>Value</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            <tr>
-                                <td>Content-Type</td>
-                                <td>application/json</td>
-                            </tr>
-                            </tbody>
-                        </table>
-                        <pre class="border bg-light re-scrollable"><code>iasdiasdhasidgasidguasd</code></pre>
-                        <hr>
-                        <h3>Response</h3>
-                        <p>200 OK <span class="badge badge-primary bg-primary">300ms</span></p>
-                        <table class="table table-compact">
-                            <thead>
-                            <tr>
-                                <th>Header</th>
-                                <th>Value</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            <tr>
-                                <td>Content-Type</td>
-                                <td>application/json</td>
-                            </tr>
-                            </tbody>
-                        </table>
-                        <pre class="border bg-light re-scrollable"><code>iasdiasdhasidgasidguasd</code></pre>
-                    </div>
+                    <div class="response-pane-response" id="response-view"></div>
                 </div>
             </div>
         </div>
     </div>
 </div>
-<script src="js/main.js" async></script>
+<script src="js/main.js"></script>
 </body>
 </html>

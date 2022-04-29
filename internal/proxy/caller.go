@@ -2,10 +2,13 @@ package proxy
 
 import (
 	"bytes"
+	"fmt"
+	"html"
 	"io"
 	"net/http"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/rs/zerolog"
 )
 
@@ -70,16 +73,21 @@ func (c *Caller) Call(r *http.Request) (*Request, error) {
 
 	// 4. Construct result
 	resultedRequest := &Request{
-		Method:     r.Method,
-		RequestURI: r.RequestURI,
-		Headers:    FlattenHeaders(r.Header),
-		CreatedAt:  createdAt,
-		Body:       requestBody,
+		UUID:              uuid.New(),
+		Method:            r.Method,
+		RequestURI:        r.RequestURI,
+		Headers:           FlattenHeaders(r.Header),
+		CreatedAt:         createdAt,
+		Body:              requestBody,
+		BodyEscapedString: html.EscapeString(string(requestBody)),
 		Response: &Response{
-			Code:     res.StatusCode,
-			Headers:  FlattenHeaders(res.Header),
-			Body:     responseBody,
-			Duration: duration,
+			Code:              res.StatusCode,
+			Status:            res.Status,
+			Headers:           FlattenHeaders(res.Header),
+			Body:              responseBody,
+			BodyEscapedString: html.EscapeString(string(responseBody)),
+			Duration:          duration,
+			DurationAsString:  fmt.Sprintf("%s", duration.Round(time.Millisecond)),
 		},
 	}
 

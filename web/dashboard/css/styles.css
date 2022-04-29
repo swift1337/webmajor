@@ -11,6 +11,14 @@
     font-weight: 600;
 }
 
+.word-break {
+    word-break: break-word;
+}
+
+.nowrap {
+    white-space: nowrap;
+}
+
 .no-hover {
     pointer-events: none;
 }
