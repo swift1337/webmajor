@@ -3,3 +3,6 @@ build:
 
 run: build
 	./bin/service -service-port 80 -proxy-port 8001
+
+lint: ## Run golangci-lint
+	golangci-lint run -v ./...

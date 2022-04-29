@@ -2,7 +2,7 @@ package proxy
 
 import (
 	"bytes"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"time"
 
@@ -36,7 +36,7 @@ func (c *Caller) Call(r *http.Request) (*Request, error) {
 	defer r.Body.Close()
 
 	// 1. Collect request body
-	requestBody, err := ioutil.ReadAll(r.Body)
+	requestBody, err := io.ReadAll(r.Body)
 	if err != nil {
 		c.logger.Err(err).Msg("unable to read request body")
 		return nil, err
@@ -62,7 +62,7 @@ func (c *Caller) Call(r *http.Request) (*Request, error) {
 
 	duration := time.Now().Sub(createdAt)
 
-	responseBody, err := ioutil.ReadAll(res.Body)
+	responseBody, err := io.ReadAll(res.Body)
 	if err != nil {
 		c.logger.Err(err).Msg("unable to read response body")
 		return nil, err

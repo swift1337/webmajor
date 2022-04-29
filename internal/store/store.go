@@ -49,16 +49,12 @@ func (s *SyncSlice) Len() int {
 
 func (s *SyncSlice) Set(values []any) {
 	s.Lock.Lock()
-	{
-		s.values = values
-	}
+	s.values = values
 	s.Lock.Unlock()
 }
 
 func (s *SyncSlice) Append(values ...any) {
 	s.Lock.Lock()
-	{
-		s.values = append(s.values, values...)
-	}
+	s.values = append(s.values, values...)
 	s.Lock.Unlock()
 }

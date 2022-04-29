@@ -39,7 +39,7 @@ func (h *Handler) HandleProxyRequest(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		h.logger.Err(err).Msg("error while proxying request")
-		writeErr(w)
+		h.writeErr(w)
 		return
 	}
 
@@ -52,7 +52,7 @@ func (h *Handler) HandleProxyRequest(w http.ResponseWriter, r *http.Request) {
 		Int("response_body_size", len(request.Response.Body)).
 		Msg("request handled")
 
-	writeProxyResponse(w, request)
+	h.writeProxyResponse(w, request)
 
 	h.requestStore.Append(request)
 }
@@ -82,19 +82,27 @@ func (h *Handler) ListRequests(w http.ResponseWriter, _ *http.Request) {
 		return
 	}
 
-	w.Write(encoded)
+	if _, err = w.Write(encoded); err != nil {
+		h.logger.Err(err).Msg("unable to write response")
+	}
 }
 
-func writeProxyResponse(w http.ResponseWriter, proxyReq *proxy.Request) {
+func (h *Handler) writeProxyResponse(w http.ResponseWriter, proxyReq *proxy.Request) {
 	for key, value := range proxyReq.Response.Headers {
 		w.Header().Add(key, value)
 	}
 
 	w.WriteHeader(proxyReq.Response.Code)
-	w.Write(proxyReq.Response.Body)
+	if _, err := w.Write(proxyReq.Response.Body); err != nil {
+		h.logger.Err(err).Msg("unable to write response")
+	}
 }
 
-func writeErr(w http.ResponseWriter) {
+func (h *Handler) writeErr(w http.ResponseWriter) {
+	errMessage := []byte("error while requesting destination")
+
 	w.WriteHeader(http.StatusInternalServerError)
-	w.Write([]byte("error while requesting destination"))
+	if _, err := w.Write(errMessage); err != nil {
+		h.logger.Err(err).Msg("unable to write response")
+	}
 }

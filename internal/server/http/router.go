@@ -3,7 +3,7 @@ package http
 import (
 	"net/http"
 
-	"github.com/go-chi/chi/v5"
+	chi "github.com/go-chi/chi/v5"
 	v1 "github.com/swift1337/webmajor/internal/server/http/v1"
 )
 
