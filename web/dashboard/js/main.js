@@ -1,9 +1,13 @@
 // 3. connect to ws connection for new connections
 // 4. render new incoming requests
 
-document.addEventListener("DOMContentLoaded", init)
-
 const API_REQUEST_ENDPOINT = "/__webmajor/api/request"
+
+const requestListElement = document.querySelector('#request-list')
+const requestPaneElement = document.querySelector('#response-pane')
+let requestStore = {}
+
+document.addEventListener("DOMContentLoaded", init)
 
 async function init(event) {
   const requestList = await fetchRequests()
@@ -12,15 +16,10 @@ async function init(event) {
     console.log('no requests to render')
   }
 
-  const requestListElement = document.querySelector('#request-list')
-  const requestPaneElement = document.querySelector('#request-view')
-
-  let requestStore = {}
-
   for (let i = 0; i < requestList.length; i++) {
     const req = requestList[i]
     requestStore[req.uuid] = req
-    renderRequestListItem(requestListElement, req)
+    renderRequestListItem(requestListElement, req.uuid)
   }
 }
 
@@ -37,8 +36,10 @@ async function fetchRequests() {
   return await response.json()
 }
 
-function renderRequestListItem(parent, request) {
+function renderRequestListItem(parent, uuid) {
+  const request = requestStore[uuid]
   let item = document.createElement('div')
+
   item.innerHTML = `
       <div class="request-preview" data-id="${request.uuid}">
           <div class="request-preview--path">${request.method} <code>${request.requestURI}</code></div>
@@ -48,20 +49,100 @@ function renderRequestListItem(parent, request) {
       </div>
   `
 
-  item.addEventListener('click', function (event) {
-    renderRequestPane(document.querySelector('#response-view'), request
-    )
+  item.addEventListener('click', function (e) {
+    renderRequestPane(requestPaneElement, uuid)
   })
 
   parent.appendChild(item)
 }
 
-function renderRequestPane(parent, request) {
-  const renderHeaders = map => {
-    let result = ''
+function renderRequestPane(parent, uuid) {
+  const request = requestStore[uuid]
+  const createdAt = new Date(request.createdAt).toLocaleTimeString()
+  const reqBody = request.body === '' ? 'no body provided' : request.bodyEscaped
+  const resBody = request.response.body === '' ? 'no body provided' : request.response.bodyEscaped
 
-    for (const [key, value] of Object.entries(map)) {
-      result += `
+  parent.innerHTML = `
+     <h3 class="mb-2">${request.method} ${request.requestURI}</h3>
+     <p>
+       <span class="badge bg-secondary">at ${createdAt}</span>
+       <span class="badge bg-primary">${request.response.durationString}</span>
+       <span class="badge bg-info">${request.response.status}</span>
+     </p>
+     <ul class="nav nav-tabs" id="responseTab" role="tablist">
+       <li class="nav-item" role="presentation">
+         <a class="nav-link active"
+            id="req-headers-tab"
+            data-bs-toggle="tab"
+            data-bs-target="#req-headers"
+            type="button"
+            role="tab"
+            aria-controls="req-headers-tab"
+            aria-selected="true">Request headers</a>
+       </li>
+       <li class="nav-item" role="presentation">
+         <a class="nav-link"
+            id="req-body-tab"
+            data-bs-toggle="tab"
+            data-bs-target="#req-body"
+            type="button"
+            role="tab"
+            aria-controls="req-body-tab"
+            aria-selected="false">Request body</a>
+       </li>
+       <li class="nav-item" role="presentation">
+         <a class="nav-link"
+            id="res-headers-tab"
+            data-bs-toggle="tab"
+            data-bs-target="#res-headers"
+            type="button"
+            role="tab"
+            aria-controls="res-headers-tab"
+            aria-selected="false">Response headers</a>
+       </li>
+       <li class="nav-item" role="presentation">
+         <a class="nav-link"
+            id="res-body-tab"
+            data-bs-toggle="tab"
+            data-bs-target="#res-body"
+            type="button"
+            role="tab"
+            aria-controls="res-body-tab"
+            aria-selected="false">Response body</a>
+       </li>
+     </ul>
+     <div class="tab-content" id="responseTabContent">
+         <div class="tab-pane show active" id="req-headers" role="tabpanel" aria-labelledby="res-headers-tab">
+             <table class="table table-sm">
+                <thead>
+                <tr><th>Header</th><th>Value</th></tr>
+                </thead>
+                <tbody>${renderHeaders(request.headers)}</tbody>
+            </table>
+        </div>
+        <div class="tab-pane" id="req-body" role="tabpanel" aria-labelledby="res-body-tab">
+            <pre class="border bg-light re-scrollable"><code>${reqBody}</code></pre>
+        </div>
+        <div class="tab-pane" id="res-headers" role="tabpanel" aria-labelledby="res-headers-tab">
+            <table class="table table-sm">
+                <thead>
+                <tr><th>Header</th> <th>Value</th></tr>
+                </thead>
+                <tbody>${renderHeaders(request.response.headers)}</tbody>
+            </table> 
+        </div>
+        <div class="tab-pane" id="res-body" role="tabpanel" aria-labelledby="res-body-tab">
+            <pre class="border bg-light re-scrollable"><code>${resBody}</code></pre>    
+        </div>
+    </div>
+  `
+}
+
+function renderHeaders(headers) {
+  let result = ''
+
+  for (const [key, value] of Object.entries(headers)) {
+    result += `
         <tr>
             <td class="nowrap">${key}</td>
             <td>
@@ -69,36 +150,7 @@ function renderRequestPane(parent, request) {
             </td>
         </tr>
       `
-    }
-
-    return result
   }
 
-  const createdAt = new Date(request.createdAt).toLocaleTimeString()
-  const reqBody = request.body === '' ? 'no body provided' : request.bodyEscaped
-  const resBody = request.response.body === '' ? 'no body provided' : request.response.bodyEscaped
-
-  parent.innerHTML = `
-     <h3>${request.method} ${request.requestURI}</h3>
-     <p>
-       at ${createdAt}
-       <span class="badge badge-primary bg-primary">${request.response.durationString}</span>
-     </p>
-     <table class="table table-sm">
-        <thead>
-        <tr><th>Header</th><th>Value</th></tr>
-        </thead>
-        <tbody>${renderHeaders(request.headers)}</tbody>
-    </table>
-    <pre class="border bg-light re-scrollable"><code>${reqBody}</code></pre>
-    <hr>
-    <h3>Response ${request.response.status}</h3>
-    <table class="table table-sm">
-        <thead>
-        <tr><th>Header</th> <th>Value</th></tr>
-        </thead>
-        <tbody>${renderHeaders(request.response.headers)}</tbody>
-    </table> 
-    <pre class="border bg-light re-scrollable"><code>${resBody}</code></pre>
-  `
+  return result
 }
