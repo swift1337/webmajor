@@ -1,7 +1,6 @@
-// 3. connect to ws connection for new connections
-// 4. render new incoming requests
-
 const API_REQUEST_ENDPOINT = "/__webmajor/api/request"
+const WS_REQUEST_ENDPOINT = "/__webmajor/api/ws"
+const DOMAIN = document.location.host
 
 const requestListElement = document.querySelector('#request-list')
 const requestPaneElement = document.querySelector('#response-pane')
@@ -19,6 +18,16 @@ async function init(event) {
   for (let i = 0; i < requestList.length; i++) {
     const req = requestList[i]
     requestStore[req.uuid] = req
+    renderRequestListItem(requestListElement, req.uuid)
+  }
+
+  let requestUpdatesSocket = new WebSocket(`ws://${DOMAIN}${WS_REQUEST_ENDPOINT}`);
+
+  requestUpdatesSocket.onmessage = function (event) {
+    const req = JSON.parse(event.data)
+
+    requestStore[req.uuid] = req
+
     renderRequestListItem(requestListElement, req.uuid)
   }
 }

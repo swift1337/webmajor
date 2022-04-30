@@ -29,6 +29,7 @@ func WithDashboardAPI(path string, handler *v1.Handler) Opt {
 	return func(r chi.Router) {
 		api := chi.NewRouter()
 		api.Get("/request", handler.ListRequests)
+		api.HandleFunc("/ws", handler.UpgradeHTTP)
 
 		r.Mount(path, api)
 	}

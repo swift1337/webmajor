@@ -4,7 +4,9 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/gorilla/websocket"
 	"github.com/rs/zerolog"
+	"github.com/swift1337/webmajor/internal/bus"
 	"github.com/swift1337/webmajor/internal/proxy"
 	"github.com/swift1337/webmajor/internal/store"
 )
@@ -12,7 +14,9 @@ import (
 type Handler struct {
 	proxyCaller  *proxy.Caller
 	requestStore *store.SyncSlice
+	requestBus   *bus.Bus
 	logger       zerolog.Logger
+	ws           *websocket.Upgrader
 }
 
 func New(
@@ -25,7 +29,9 @@ func New(
 	return &Handler{
 		proxyCaller:  proxyCaller,
 		requestStore: requestStore,
+		requestBus:   bus.New(3),
 		logger:       log,
+		ws:           &websocket.Upgrader{},
 	}
 }
 
@@ -55,6 +61,7 @@ func (h *Handler) HandleProxyRequest(w http.ResponseWriter, r *http.Request) {
 	h.writeProxyResponse(w, request)
 
 	h.requestStore.Append(request)
+	h.requestBus.Publish(request)
 }
 
 // ListRequests get all requests that are made
@@ -85,6 +92,49 @@ func (h *Handler) ListRequests(w http.ResponseWriter, _ *http.Request) {
 	if _, err = w.Write(encoded); err != nil {
 		h.logger.Err(err).Msg("unable to write response")
 	}
+}
+
+func (h *Handler) UpgradeHTTP(w http.ResponseWriter, r *http.Request) {
+	conn, err := h.ws.Upgrade(w, r, nil)
+
+	if err != nil {
+		h.logger.Err(err).Msg("unable to upgrade http connection to ws")
+		return
+	}
+
+	h.logger.Info().Str("ip", r.RemoteAddr).Msg("new ws client")
+	sub := h.requestBus.Subscribe()
+
+	go func() {
+		defer conn.Close()
+
+		for message := range sub.Channel() {
+			request, ok := message.(*proxy.Request)
+
+			if !ok {
+				h.logger.Warn().Msg("unable to cast bus message to *Request")
+				continue
+			}
+
+			encoded, err := json.Marshal(request)
+			if err != nil {
+				h.logger.
+					Err(err).
+					Str("ip", r.RemoteAddr).
+					Msg("unable to marshal request for ws stream")
+				continue
+			}
+
+			err = conn.WriteMessage(websocket.TextMessage, encoded)
+			if err != nil {
+				h.logger.
+					Err(err).
+					Str("ip", r.RemoteAddr).
+					Msg("unable to write message to ws connection. Closing connection")
+				h.requestBus.Unsubscribe(sub)
+			}
+		}
+	}()
 }
 
 func (h *Handler) writeProxyResponse(w http.ResponseWriter, proxyReq *proxy.Request) {
