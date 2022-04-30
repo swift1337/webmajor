@@ -2,7 +2,6 @@ package proxy
 
 import (
 	"bytes"
-	"fmt"
 	"html"
 	"io"
 	"net/http"
@@ -87,7 +86,7 @@ func (c *Caller) Call(r *http.Request) (*Request, error) {
 			Body:              responseBody,
 			BodyEscapedString: html.EscapeString(string(responseBody)),
 			Duration:          duration,
-			DurationAsString:  fmt.Sprintf("%s", duration.Round(time.Millisecond)),
+			DurationAsString:  duration.Round(time.Millisecond).String(),
 		},
 	}
 
