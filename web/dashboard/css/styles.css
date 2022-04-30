@@ -29,6 +29,12 @@
     position: relative;
 }
 
+.request-preview.active {
+    pointer-events: none;
+    font-weight: bolder;
+    background: #dedede;
+}
+
 .request-preview:hover {
     background: #eee;
     cursor: pointer;

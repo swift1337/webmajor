@@ -49,17 +49,28 @@ function renderRequestListItem(parent, uuid) {
   const request = requestStore[uuid]
   let item = document.createElement('div')
 
+  item.classList.add('request-preview')
+  item.dataset.id = request.uuid
+
   item.innerHTML = `
-      <div class="request-preview" data-id="${request.uuid}">
-          <div class="request-preview--path">${request.method} <code>${request.requestURI}</code></div>
-          <div class="request-preview--status" 
-               title="${request.response.status}">${request.response.code}</div>
-          <div class="request-preview--duration">${request.response.durationString}</div>
-      </div>
+    <div class="request-preview--path">${request.method} <code>${request.requestURI}</code></div>
+    <div class="request-preview--status" 
+         title="${request.response.status}">${request.response.code}</div>
+    <div class="request-preview--duration">${request.response.durationString}</div>
   `
 
   item.addEventListener('click', function (e) {
     renderRequestPane(requestPaneElement, uuid)
+
+    item.classList.toggle('active')
+
+    const prevActiveItemElement = document.querySelector(
+      `.active[data-id]:not([data-id="${request.uuid}"])`
+    )
+
+    if(prevActiveItemElement) {
+      prevActiveItemElement.classList.toggle('active')
+    }
   })
 
   parent.appendChild(item)
