@@ -39,10 +39,11 @@ func (b *Bus) Subscribe() *Subscriber {
 }
 
 func (b *Bus) Unsubscribe(sub *Subscriber) {
-	close(sub.ch)
-
 	b.mu.Lock()
-	delete(b.subscribers, sub.id)
+	{
+		close(sub.ch)
+		delete(b.subscribers, sub.id)
+	}
 	b.mu.Unlock()
 }
 

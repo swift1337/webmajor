@@ -91,14 +91,14 @@ function renderRequestPane(parent, uuid) {
      </p>
      <ul class="nav nav-tabs" id="responseTab" role="tablist">
        <li class="nav-item" role="presentation">
-         <a class="nav-link active"
+         <a class="nav-link"
             id="req-headers-tab"
             data-bs-toggle="tab"
             data-bs-target="#req-headers"
             type="button"
             role="tab"
             aria-controls="req-headers-tab"
-            aria-selected="true">Request headers</a>
+            aria-selected="false">Request headers</a>
        </li>
        <li class="nav-item" role="presentation">
          <a class="nav-link"
@@ -121,18 +121,18 @@ function renderRequestPane(parent, uuid) {
             aria-selected="false">Response headers</a>
        </li>
        <li class="nav-item" role="presentation">
-         <a class="nav-link"
+         <a class="nav-link active"
             id="res-body-tab"
             data-bs-toggle="tab"
             data-bs-target="#res-body"
             type="button"
             role="tab"
             aria-controls="res-body-tab"
-            aria-selected="false">Response body</a>
+            aria-selected="true">Response body</a>
        </li>
      </ul>
      <div class="tab-content" id="responseTabContent">
-         <div class="tab-pane show active" id="req-headers" role="tabpanel" aria-labelledby="res-headers-tab">
+         <div class="tab-pane show" id="req-headers" role="tabpanel" aria-labelledby="res-headers-tab">
              <table class="table table-sm">
                 <thead>
                 <tr><th>Header</th><th>Value</th></tr>
@@ -151,7 +151,7 @@ function renderRequestPane(parent, uuid) {
                 <tbody>${renderHeaders(request.response.headers)}</tbody>
             </table> 
         </div>
-        <div class="tab-pane" id="res-body" role="tabpanel" aria-labelledby="res-body-tab">
+        <div class="tab-pane active" id="res-body" role="tabpanel" aria-labelledby="res-body-tab">
             <pre class="border bg-light re-scrollable"><code>${resBody}</code></pre>    
         </div>
     </div>

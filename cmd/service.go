@@ -15,8 +15,8 @@ import (
 )
 
 var (
-	servicePort = flag.String("service-port", "8080", "incoming data port")
-	proxyPort   = flag.String("proxy-port", "8000", "proxy destination port")
+	servicePort = flag.String("service-port", "8080", "WebMajor incoming port")
+	sourceBase  = flag.String("source", "http://0.0.0.0:8000", "Destination service.")
 )
 
 var logger zerolog.Logger
@@ -26,7 +26,7 @@ func main() {
 	logger = setupLogger()
 
 	handler := v1.New(
-		proxy.NewCaller("http://0.0.0.0:"+*proxyPort, logger),
+		proxy.NewCaller(*sourceBase, logger),
 		store.NewSyncSlice(),
 		logger,
 	)
