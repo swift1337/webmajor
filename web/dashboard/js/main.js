@@ -68,7 +68,7 @@ function renderRequestListItem(parent, uuid) {
       `.active[data-id]:not([data-id="${request.uuid}"])`
     )
 
-    if(prevActiveItemElement) {
+    if (prevActiveItemElement) {
       prevActiveItemElement.classList.toggle('active')
     }
   })
@@ -79,8 +79,6 @@ function renderRequestListItem(parent, uuid) {
 function renderRequestPane(parent, uuid) {
   const request = requestStore[uuid]
   const createdAt = new Date(request.createdAt).toLocaleTimeString()
-  const reqBody = request.body === '' ? 'no body provided' : request.bodyEscaped
-  const resBody = request.response.body === '' ? 'no body provided' : request.response.bodyEscaped
 
   parent.innerHTML = `
      <h3 class="mb-2">${request.method} ${request.requestURI}</h3>
@@ -141,7 +139,8 @@ function renderRequestPane(parent, uuid) {
             </table>
         </div>
         <div class="tab-pane" id="req-body" role="tabpanel" aria-labelledby="res-body-tab">
-            <pre class="border bg-light re-scrollable"><code>${reqBody}</code></pre>
+            <pre class="border bg-light re-scrollable p-2"
+            ><code>${formatBody(request)}</code></pre>
         </div>
         <div class="tab-pane" id="res-headers" role="tabpanel" aria-labelledby="res-headers-tab">
             <table class="table table-sm">
@@ -152,7 +151,8 @@ function renderRequestPane(parent, uuid) {
             </table> 
         </div>
         <div class="tab-pane active" id="res-body" role="tabpanel" aria-labelledby="res-body-tab">
-            <pre class="border bg-light re-scrollable"><code>${resBody}</code></pre>    
+            <pre class="border bg-light re-scrollable p-2"
+            ><code>${formatBody(request.response)}</code></pre>
         </div>
     </div>
   `
@@ -173,4 +173,21 @@ function renderHeaders(headers) {
   }
 
   return result
+}
+
+function formatBody(formattable) {
+  const contentType = formattable.headers['Content-Type'] ?? 'text/plain'
+  let body = formattable.body
+
+  if (body === '') {
+    return 'No body provided'
+  }
+
+  body = atob(body)
+
+  if (contentType.includes('application/json')) {
+    body = JSON.stringify(JSON.parse(body), null, 2)
+  }
+
+  return hljs.highlightAuto(body).value
 }
