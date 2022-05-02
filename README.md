@@ -15,7 +15,7 @@ May  2 22:37:10.000 INF to visit dashboard, open http://localhost:9999/__webmajo
 
 ## Real usage example
 ```bash
-./service -source https://api.dictionaryapi.dev -service-port 80
+./webmajor -source https://api.dictionaryapi.dev -service-port 80
 May  2 22:47:56.000 INF starting server
 May  2 22:47:56.000 INF source base: https://api.dictionaryapi.dev
 May  2 22:47:56.000 INF to visit dashboard, open http://localhost:80/__webmajor
