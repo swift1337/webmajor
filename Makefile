@@ -6,3 +6,6 @@ run: build
 
 lint: ## Run golangci-lint
 	golangci-lint run -v ./...
+
+test:
+	go test -race ./...

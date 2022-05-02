@@ -26,7 +26,7 @@ func main() {
 	logger = setupLogger()
 
 	handler := v1.New(
-		proxy.NewCaller(*sourceBase, logger),
+		proxy.NewCaller(*sourceBase, time.Second*30, logger),
 		store.NewSyncSlice(),
 		logger,
 	)

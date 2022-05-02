@@ -6,12 +6,14 @@ import (
 	"github.com/google/uuid"
 )
 
+// Bus provides message pub/sub functionality via Publish() method
 type Bus struct {
 	mu               sync.RWMutex
 	subscribers      map[string]*Subscriber
 	subscriberBuffer int
 }
 
+// Subscriber belongs to Bus
 type Subscriber struct {
 	id string
 	ch chan any
@@ -40,11 +42,13 @@ func (b *Bus) Subscribe() *Subscriber {
 
 func (b *Bus) Unsubscribe(sub *Subscriber) {
 	b.mu.Lock()
-	{
+	defer b.mu.Unlock()
+
+	// safety check to prevent closing of closed channel
+	if _, exists := b.subscribers[sub.id]; exists {
 		close(sub.ch)
 		delete(b.subscribers, sub.id)
 	}
-	b.mu.Unlock()
 }
 
 func (b *Bus) Publish(message any) {
@@ -54,11 +58,22 @@ func (b *Bus) Publish(message any) {
 	for _, sub := range b.subscribers {
 		select {
 		case sub.ch <- message:
-		default: // safe skip if subscriber buffer is ful
+		default: // safe skip if subscriber buffer is full
 		}
 	}
 }
 
+func (b *Bus) Subscribers() int {
+	b.mu.RLock()
+	defer b.mu.RUnlock()
+
+	return len(b.subscribers)
+}
+
 func (s *Subscriber) Channel() <-chan any {
 	return s.ch
+}
+
+func (s *Subscriber) ID() string {
+	return s.id
 }

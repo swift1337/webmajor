@@ -19,13 +19,14 @@ type Caller struct {
 
 func NewCaller(
 	basePath string,
+	timeout time.Duration,
 	logger zerolog.Logger,
 ) *Caller {
 	log := logger.With().Str("channel", "proxy_caller").Logger()
 
 	return &Caller{
 		client: &http.Client{
-			Timeout: time.Second * 30,
+			Timeout: timeout,
 		},
 		basePath: basePath,
 		logger:   log,
@@ -54,7 +55,7 @@ func (c *Caller) Call(r *http.Request) (*Request, error) {
 	// 3. Perform request
 	createdAt := time.Now()
 
-	res, err := http.DefaultClient.Do(proxyReq)
+	res, err := c.client.Do(proxyReq)
 	if err != nil {
 		c.logger.Err(err).Str("destination", destination).Msg("request error")
 		return nil, err

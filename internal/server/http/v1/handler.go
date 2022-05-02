@@ -6,9 +6,9 @@ import (
 
 	"github.com/gorilla/websocket"
 	"github.com/rs/zerolog"
-	"github.com/swift1337/webmajor/internal/bus"
 	"github.com/swift1337/webmajor/internal/proxy"
 	"github.com/swift1337/webmajor/internal/store"
+	"github.com/swift1337/webmajor/pkg/bus"
 )
 
 type Handler struct {
