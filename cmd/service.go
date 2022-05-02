@@ -40,6 +40,7 @@ func main() {
 	)
 
 	logger.Info().Msg("starting server")
+	logger.Info().Msgf("source base: %s", *sourceBase)
 	logger.Info().Msgf("to visit dashboard, open http://localhost:%s%s", *servicePort, DashboardPath)
 
 	err := http.ListenAndServe(":"+*servicePort, router)
