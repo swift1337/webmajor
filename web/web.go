@@ -1,6 +1,15 @@
 package web
 
-import "embed"
+import (
+	"embed"
+	"io/fs"
+)
 
 //go:embed dashboard/*
-var Dashboard embed.FS
+var dashboard embed.FS
+
+func DashboardFiles() fs.FS {
+	sub, _ := fs.Sub(dashboard, "dashboard")
+
+	return sub
+}

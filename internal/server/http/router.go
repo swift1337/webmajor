@@ -21,6 +21,10 @@ func NewRouter(opts ...Opt) chi.Router {
 
 func WithDashboardAssets(path string, files http.FileSystem) Opt {
 	return func(r chi.Router) {
+		r.Get(path, func(w http.ResponseWriter, r *http.Request) {
+			http.Redirect(w, r, path+"/", http.StatusPermanentRedirect)
+		})
+
 		r.Handle(path+"/*", http.StripPrefix(path, http.FileServer(files)))
 	}
 }
