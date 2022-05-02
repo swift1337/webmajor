@@ -13,6 +13,16 @@ May  2 22:37:10.000 INF source base: http://localhost:8080
 May  2 22:37:10.000 INF to visit dashboard, open http://localhost:9999/__webmajor
 ```
 
+## Real usage example
+```bash
+./service -source https://api.dictionaryapi.dev -service-port 80
+May  2 22:47:56.000 INF starting server
+May  2 22:47:56.000 INF source base: https://api.dictionaryapi.dev
+May  2 22:47:56.000 INF to visit dashboard, open http://localhost:80/__webmajor
+```
+![demo](https://user-images.githubusercontent.com/11892559/166315885-bc28ea9c-af4d-4264-966a-1bb39ba9750a.gif)
+
+
 
 ## Installation
 You can check repo releases and download binary for your platform or build service manually from sources
