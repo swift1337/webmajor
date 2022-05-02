@@ -73,6 +73,12 @@ function renderRequestListItem(parent, uuid) {
     }
   })
 
+  const noDataMessage = document.querySelector('.request-preview-no-data')
+
+  if (noDataMessage) {
+    noDataMessage.remove()
+  }
+
   parent.appendChild(item)
 }
 

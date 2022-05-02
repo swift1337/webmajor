@@ -13,6 +13,11 @@ import (
 	"github.com/swift1337/webmajor/web"
 )
 
+const (
+	ApiPath       = "/__webmajor/api"
+	DashboardPath = "/__webmajor"
+)
+
 var (
 	servicePort = flag.String("service-port", "8080", "WebMajor incoming port")
 	sourceBase  = flag.String("source", "http://0.0.0.0:8000", "Destination service")
@@ -29,12 +34,14 @@ func main() {
 	)
 
 	router := httpServer.NewRouter(
-		httpServer.WithDashboardAPI("/__webmajor/api", handler),
-		httpServer.WithDashboardAssets("/__webmajor", http.FS(web.DashboardFiles())),
+		httpServer.WithDashboardAPI(ApiPath, handler),
+		httpServer.WithDashboardAssets(DashboardPath, http.FS(web.DashboardFiles())),
 		httpServer.WithProxy(handler),
 	)
 
 	logger.Info().Msg("starting server")
+	logger.Info().Msgf("to visit dashboard, open http://localhost:%s%s", *servicePort, DashboardPath)
+
 	err := http.ListenAndServe(":"+*servicePort, router)
 
 	if err != nil {
